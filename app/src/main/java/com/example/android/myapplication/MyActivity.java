@@ -2,7 +2,9 @@ package com.example.android.myapplication;
 
 import android.app.Activity;
 import android.app.ActivityManager;
+import android.content.ComponentName;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -13,11 +15,16 @@ import android.widget.Button;
 public class MyActivity extends Activity {
 
     Button btnStartService, btnStopService;
+    ComponentName receiver;
+    PackageManager pm;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_my);
+
+        receiver = new ComponentName(this, BootCompleted.class);
+        pm = this.getPackageManager();
 
         btnStartService = (Button) findViewById(R.id.btnStartService);
         btnStopService = (Button) findViewById(R.id.btnStopService);
@@ -58,12 +65,22 @@ public class MyActivity extends Activity {
     public void startService(View view) {
         startService(new Intent(getBaseContext(), MyService.class));
         updateButtonState();
+
+        //enable auto start
+        pm.setComponentEnabledSetting(receiver,
+                PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
+                PackageManager.DONT_KILL_APP);
     }
 
     // Method to stop the service
     public void stopService(View view) {
         stopService(new Intent(getBaseContext(), MyService.class));
         updateButtonState();
+
+        //disable auto start
+        pm.setComponentEnabledSetting(receiver,
+                PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
+                PackageManager.DONT_KILL_APP);
     }
 
     public void updateButtonState() {
