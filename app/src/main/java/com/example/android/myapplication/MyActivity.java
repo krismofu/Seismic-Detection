@@ -1,18 +1,28 @@
 package com.example.android.myapplication;
 
 import android.app.Activity;
+import android.app.ActivityManager;
+import android.content.Context;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.content.Intent;
 import android.view.View;
+import android.widget.Button;
 
 public class MyActivity extends Activity {
+
+    Button btnStartService, btnStopService;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_my);
+
+        btnStartService = (Button) findViewById(R.id.btnStartService);
+        btnStopService = (Button) findViewById(R.id.btnStopService);
+
+        updateButtonState();
     }
 
     @Override
@@ -47,10 +57,41 @@ public class MyActivity extends Activity {
     // Method to start the service
     public void startService(View view) {
         startService(new Intent(getBaseContext(), MyService.class));
+        updateButtonState();
     }
 
     // Method to stop the service
     public void stopService(View view) {
         stopService(new Intent(getBaseContext(), MyService.class));
+        updateButtonState();
+    }
+
+    public void updateButtonState() {
+        if (isMyServiceRunning(MyService.class)) {
+            btnStopService.setClickable(true);
+            btnStopService.setEnabled(true);
+
+            btnStartService.setClickable(false);
+            btnStartService.setEnabled(false);
+        }
+        else {
+            btnStopService.setClickable(false);
+            btnStopService.setEnabled(false);
+
+            btnStartService.setClickable(true);
+            btnStartService.setEnabled(true);
+        }
+
+
+    }
+
+    private boolean isMyServiceRunning(Class<?> serviceClass) {
+        ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+            if (serviceClass.getName().equals(service.service.getClassName())) {
+                return true;
+            }
+        }
+        return false;
     }
 }

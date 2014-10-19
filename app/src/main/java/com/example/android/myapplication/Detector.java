@@ -7,14 +7,9 @@ import android.hardware.Sensor;
 import android.content.Context;
 import android.hardware.SensorEvent;
 import android.preference.PreferenceManager;
-import android.widget.Toast;
 import org.json.JSONObject;
 import java.util.concurrent.ExecutionException;
 
-
-/**
- * Created by maruli on 21/09/14.
- */
 public class Detector implements SensorEventListener {
     private float mLastX, mLastY, mLastZ;
     private static final double nbElements = 30;
@@ -96,7 +91,6 @@ public class Detector implements SensorEventListener {
                     if (temp == nbElements) {
                         time = tS - now;
                         //value.setText(Double.toString(nbElements * 1000000000 / time));
-                        Toast.makeText(mContext, "Service Destroyed Host = ", Toast.LENGTH_LONG).show();
                         temp = 0;
                     }
                 }
@@ -116,7 +110,6 @@ public class Detector implements SensorEventListener {
                 // kirim data ke server
                 if(deltaX > 5 || deltaY > 5 || deltaZ > 5){
                     Context context = mContext.getApplicationContext();
-                    int duration = Toast.LENGTH_SHORT;
 
                     CharSequence text = "";
                     inputString = preferences.getString(Host, "");
@@ -168,10 +161,6 @@ public class Detector implements SensorEventListener {
                         }
                         */
                     }
-
-                    //tampilkan pesan
-                    Toast toast = Toast.makeText(context, text, duration);
-                    toast.show();
                 }
             }
         }
@@ -181,5 +170,9 @@ public class Detector implements SensorEventListener {
 
     public void onAccuracyChanged(Sensor sensor, int i) {
 
+    }
+
+    public void turnOff() {
+        mSensorManager.unregisterListener(this);
     }
 }
