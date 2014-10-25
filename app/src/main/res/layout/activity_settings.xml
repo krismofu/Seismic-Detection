@@ -22,7 +22,7 @@
             android:layout_marginTop="5dp"
             android:layout_marginLeft="82dp"
             android:ems="10"
-            android:inputType="number"
+            android:inputType="phone"
             android:digits="0123456789.">
 
         </EditText>

@@ -1,18 +1,24 @@
 package com.example.android.myapplication;
 
 import android.content.SharedPreferences;
+import android.os.Bundle;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.hardware.Sensor;
 import android.content.Context;
 import android.hardware.SensorEvent;
 import android.preference.PreferenceManager;
+import android.app.Activity;
+import android.view.Menu;
+import android.widget.TextView;
+import android.widget.Toast;
+
 import org.json.JSONObject;
 import java.util.concurrent.ExecutionException;
 
 public class Detector implements SensorEventListener {
     private float mLastX, mLastY, mLastZ;
-    private static final double nbElements = 30;
+   // private static final double accl;
     private boolean mInitialized;
     private SensorManager mSensorManager;
     private Sensor mAccelerometer;
@@ -27,7 +33,24 @@ public class Detector implements SensorEventListener {
 
     Context mContext;
 
+    private int threshold;
+
+
+
+/*
+   @Override
+
+    protected void onCreate(Bundle savedInstanceState) {
+
+        /** Called when the activity is first created.
+
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_my);
+    }
+*/
+
     public Detector(Context mContext) {
+
         this.mContext = mContext;
         mInitialized = false;
 
@@ -39,9 +62,21 @@ public class Detector implements SensorEventListener {
 
         preferences = PreferenceManager.getDefaultSharedPreferences(mContext);
     }
+/*
 
-    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.my, menu);
+        return true;
+    }*/
+
+ // @Override
     public void onSensorChanged(SensorEvent sensorEvent) {
+
+       // TextView tvX= (TextView)findViewById(R.id.x_axis);
+       // TextView tvY= (TextView)findViewById(R.id.y_axis);
+        //TextView tvZ= (TextView)findViewById(R.id.z_axis);
+        //TextView accl = (TextView)findViewById(R.id.accl);
 
         String inputString = "";
         String  androidId  = "" + android.provider.Settings.Secure.getString( mContext.getContentResolver(), android.provider.Settings.Secure.ANDROID_ID);
@@ -49,8 +84,10 @@ public class Detector implements SensorEventListener {
         if (sensorEvent.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
 
             float x = sensorEvent.values[0];
-            float y = sensorEvent.values[1];
+            float y= sensorEvent.values[1];
             float z = sensorEvent.values[2];
+
+
 
             if (!mInitialized) {
                 mLastX = x;
@@ -68,18 +105,30 @@ public class Detector implements SensorEventListener {
                 float deltaY = Math.abs(mLastY - y);
                 float deltaZ = Math.abs(mLastZ - z);
 
-                if (deltaX < NOISE) deltaX = (float)0.0;
-                if (deltaY < NOISE) deltaY = (float)0.0;
-                if (deltaZ < NOISE) deltaZ = (float)0.0;
+                if (deltaX < NOISE)
+                    deltaX = (float)0.0;
+                if (deltaY < NOISE)
+                    deltaY = (float)0.0;
+                if (deltaZ < NOISE)
+                    deltaZ = (float)0.0;
 
                 mLastX = x;
                 mLastY = y;
                 mLastZ = z;
 
+
+
+               double value = Math.sqrt(deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ);
+
+                //accl.setText(Double.toString(value));
+
+
+               /// String value = Double.toString(accl) +Threshold;
+
                 /*
                     hitung refresh rate sensor
                     untuk dapatin berapa frequency nya
-                 */
+
                 long tS;
 
                 // Get timestamp of the event
@@ -91,6 +140,7 @@ public class Detector implements SensorEventListener {
                     if (temp == nbElements) {
                         time = tS - now;
                         //value.setText(Double.toString(nbElements * 1000000000 / time));
+
                         temp = 0;
                     }
                 }
@@ -101,15 +151,27 @@ public class Detector implements SensorEventListener {
                 }
 
                 //tampilkan delta axix x, y dan z
-                /*
+
                 tvX.setText(Float.toString(deltaX));
                 tvY.setText(Float.toString(deltaY));
                 tvZ.setText(Float.toString(deltaZ));
                 */
                 // jika delta x atau y atau z lebih besar dari 5
                 // kirim data ke server
-                if(deltaX > 5 || deltaY > 5 || deltaZ > 5){
+
+                //Toast.makeText(mContext, "Service Destroyed Host = " +Host, Toast.LENGTH_LONG).show();
+               // tvX.setText(Float.toString(deltaX));
+               // tvY.setText(Float.toString(deltaY));
+               // tvZ.setText(Float.toString(deltaZ));
+
+// kirim data ke server
+
+            threshold = preferences.getInt(Threshold,0);
+
+                if(value >= threshold && value > 0){
+
                     Context context = mContext.getApplicationContext();
+                    int duration = Toast.LENGTH_SHORT;
 
                     CharSequence text = "";
                     inputString = preferences.getString(Host, "");
@@ -134,6 +196,7 @@ public class Detector implements SensorEventListener {
                             e.printStackTrace();
                         }
                         text = androidId + " Sent Request!";
+                        //text = Threshold + "tes";
 
 
                         /*
@@ -160,6 +223,8 @@ public class Detector implements SensorEventListener {
                             e.printStackTrace();
                         }
                         */
+                      //  Toast toast = Toast.makeText(context, text, duration);
+                       // toast.show();
                     }
                 }
             }

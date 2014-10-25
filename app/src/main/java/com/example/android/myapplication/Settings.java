@@ -14,10 +14,10 @@ import android.view.View;
 
 public class Settings extends Activity {
 
-    TextView name ;
-    TextView phone;
-    public static final String Name = "host";
-    public static final String Phone = "threshold";
+    TextView host ;
+    TextView threshold;
+    public static final String Host = "host";
+    public static final String Threshold = "threshold";
 
     SharedPreferences sharedpreferences;
 
@@ -26,30 +26,33 @@ public class Settings extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_settings);
 
-        name = (TextView) findViewById(R.id.editTextHost);
-        phone = (TextView) findViewById(R.id.editTextThreshold);
+        host = (TextView) findViewById(R.id.editTextHost);
+        threshold = (TextView) findViewById(R.id.editTextThreshold);
 
         sharedpreferences = PreferenceManager.getDefaultSharedPreferences(this);
 
-        if (sharedpreferences.contains(Name))
+        if (sharedpreferences.contains(Host))
         {
-            name.setText(sharedpreferences.getString(Name, ""));
+            host.setText(sharedpreferences.getString(Host, ""));
 
         }
-        if (sharedpreferences.contains(Phone))
+        if (sharedpreferences.contains(Threshold))
         {
-            phone.setText(sharedpreferences.getString(Phone, ""));
+            int thresholdint = sharedpreferences.getInt(Threshold,0);
+            String myString = String.valueOf(thresholdint);
+            threshold.setText(myString);
+
 
         }
 
     }
 
     public void run(View view){
-        String n  = name.getText().toString();
-        String ph  = phone.getText().toString();
+        String n  = host.getText().toString();
+        String ph  = threshold.getText().toString();
         Editor editor = sharedpreferences.edit();
-        editor.putString(Name, n);
-        editor.putString(Phone, ph);
+        editor.putString(Host, n);
+        editor.putInt(Threshold,Integer.parseInt(ph));
         editor.commit();
     }
 

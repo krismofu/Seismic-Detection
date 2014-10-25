@@ -28,7 +28,7 @@ public class MyService extends Service {
     public void onDestroy() {
         super.onDestroy();
 
-        //non aktifakan detektor
+        //non aktifkan detektor
         detection.turnOff();
         detection = null;
         System.gc();
