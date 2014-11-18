@@ -16,6 +16,7 @@
 
         <EditText
             android:id="@+id/editTextHost"
+            android:hint="Input IP Server"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentLeft="true"
@@ -29,6 +30,7 @@
 
         <EditText
             android:id="@+id/editTextThreshold"
+            android:hint="Input Threshold"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignLeft="@+id/editTextHost"

@@ -75,15 +75,15 @@ public class Detector implements SensorEventListener {
                 mLastY = y;
                 mLastZ = z;
 
-                double value = Math.sqrt(deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ);
-                Log.i("VALUE", Double.toString(value));
+                double mvalue = Math.sqrt(deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ);
+                Log.i("VALUE", Double.toString(mvalue));
 
                 // jika delta x atau y atau z lebih besar dari 5
                 // kirim data ke server
-                if(value >= threshold && value > 0 ){
+                if(mvalue >= threshold && mvalue > 0 ){
                     doJson requestJson = new doJson();
 
-                    requestJson.execute(host, androidId, Float.toString(deltaX), Float.toString(deltaY), Float.toString(deltaZ));
+                    requestJson.execute(host, androidId, Float.toString(deltaX), Float.toString(deltaY), Float.toString(deltaZ), Double.toString(mvalue));
 
                     JSONObject json = null;
                     try {

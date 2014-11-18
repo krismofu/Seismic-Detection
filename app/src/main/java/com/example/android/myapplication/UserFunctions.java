@@ -17,7 +17,7 @@ public class UserFunctions {
         jsonParser = new JSONParser();
     }
 
-    public JSONObject tambahData(String registerURL, String deviceId, String x, String y, String z) {
+    public JSONObject tambahData(String registerURL, String deviceId, String x, String y, String z, String mvalue) {
         // Building Parameters
         List<NameValuePair> params = new ArrayList<NameValuePair>();
         params.add(new BasicNameValuePair("tag", "insert"));
@@ -25,6 +25,8 @@ public class UserFunctions {
         params.add(new BasicNameValuePair("x", x));
         params.add(new BasicNameValuePair("y", y));
         params.add(new BasicNameValuePair("z", z));
+        params.add(new BasicNameValuePair("value", mvalue));
+
 
         // getting JSON Object
         JSONObject json = jsonParser.getJSONFromUrl(registerURL, params);
