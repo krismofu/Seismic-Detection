@@ -34,4 +34,17 @@ public class UserFunctions {
         return json;
     }
 
+    public JSONObject tambahData(String registerURL, String deviceId, String value) {
+        // Building Parameters
+        List<NameValuePair> params = new ArrayList<NameValuePair>();
+        params.add(new BasicNameValuePair("tag", "insert"));
+        params.add(new BasicNameValuePair("deviceId", deviceId));
+        params.add(new BasicNameValuePair("value", value));
+
+        // getting JSON Object
+        JSONObject json = jsonParser.getJSONFromUrl(registerURL, params);
+        // return json
+        return json;
+    }
+
 }

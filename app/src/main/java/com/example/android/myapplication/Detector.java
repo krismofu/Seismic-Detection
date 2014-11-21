@@ -10,6 +10,7 @@ import android.preference.PreferenceManager;
 import android.util.Log;
 import android.widget.Toast;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 import java.util.concurrent.ExecutionException;
 
@@ -30,9 +31,10 @@ public class Detector implements SensorEventListener {
     private int threshold;
     private SharedPreferences preferences;
     private String androidId;
+    private Context context;
 
     public Detector(Context mContext) {
-
+        context = mContext;
         mInitialized = false;
         mSensorManager = (SensorManager) mContext.getSystemService(Context.SENSOR_SERVICE);
         mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
@@ -76,49 +78,33 @@ public class Detector implements SensorEventListener {
                 mLastZ = z;
 
                 double mvalue = Math.sqrt(deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ);
-                Log.i("VALUE", Double.toString(mvalue));
 
                 // jika delta x atau y atau z lebih besar dari 5
                 // kirim data ke server
                 if(mvalue >= threshold && mvalue > 0 ){
-                    doJson requestJson = new doJson();
 
-                    requestJson.execute(host, androidId, Float.toString(deltaX), Float.toString(deltaY), Float.toString(deltaZ), Double.toString(mvalue));
+                    Log.i("VALUE", Double.toString(mvalue));
+
+                    doJson requestJson = new doJson();
+                    requestJson.execute(host, androidId, Double.toString(mvalue));
+                    //requestJson.execute(host, androidId, Float.toString(deltaX), Float.toString(deltaY), Float.toString(deltaZ), Double.toString(mvalue));
 
                     JSONObject json = null;
                     try {
                         json = requestJson.get();
+                        JSONObject uniObject = json.getJSONObject("response");
+                        String  alert = uniObject.getString("alert");
+                        Log.i("ALERT", alert);
+                        if(alert == "true") {
+                            Toast.makeText(context, "Terjadi Gempa", Toast.LENGTH_SHORT).show();
+                        }
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     } catch (ExecutionException e) {
                         e.printStackTrace();
+                    } catch (JSONException e) {
+                        e.printStackTrace();
                     }
-                        /*
-                           periksa balasan dari server apakah proses input berhasil
-                        */
-
-                    // check for login response
-                        /*
-                        try {
-                            if (json.getString(KEY_SUCCESS) != null) {
-                                String res = json.getString(KEY_SUCCESS);
-                                if(Integer.parseInt(res) == 1){
-
-                                    text = androidId + " Sent Request!";
-
-                                    finish();
-
-                                }else{
-                                    // Error in login
-                                    text = "Gagal menambah data";
-                                }
-                            }
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                        }
-                        */
-                    //  Toast toast = Toast.makeText(context, text, duration);
-                    // toast.show();
                 }
             }
         }

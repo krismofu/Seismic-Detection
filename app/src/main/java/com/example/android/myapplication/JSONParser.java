@@ -55,30 +55,19 @@ public class JSONParser {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
+        JSONObject mainObject = null;
         try {
-            BufferedReader reader = new BufferedReader(new InputStreamReader(
-                    is, "iso-8859-1"), 8);
-            StringBuilder sb = new StringBuilder();
+            BufferedReader reader = new BufferedReader(new InputStreamReader(is, "iso-8859-1"), 8);
             String line = null;
             while ((line = reader.readLine()) != null) {
-                sb.append(line + "n");
+                mainObject = new JSONObject(line);
             }
             is.close();
-            json = sb.toString();
-            Log.e("JSON", json);
         } catch (Exception e) {
             Log.e("Buffer Error", "Error converting result " + e.toString());
         }
 
-        // try parse the string to a JSON object
-        try {
-            jObj = new JSONObject(json);
-        } catch (JSONException e) {
-            Log.e("JSON Parser", "Error parsing data " + e.toString());
-        }
-
-        // return JSON String
-        return jObj;
+        // return JSON Object
+        return mainObject;
     }
 }
