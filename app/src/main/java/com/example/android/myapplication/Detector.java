@@ -17,6 +17,9 @@ import android.widget.Toast;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.concurrent.ExecutionException;
 
 public class Detector implements SensorEventListener {
@@ -32,11 +35,14 @@ public class Detector implements SensorEventListener {
     private static String KEY_SUCCESS = "success";
     private final String Host = "host";
     private final String Threshold = "threshold";
+    private final String DataStream = "stream";
     private String host;
     private int threshold;
     private SharedPreferences preferences;
     private String androidId;
     private Context context;
+    private boolean dataStream;
+    private static long counter = 0;
 
     public Detector(Context mContext) {
         context = mContext;
@@ -46,6 +52,7 @@ public class Detector implements SensorEventListener {
         mSensorManager.registerListener(this, mAccelerometer, SensorManager.SENSOR_DELAY_NORMAL);
         preferences = PreferenceManager.getDefaultSharedPreferences(mContext);
 
+        dataStream = preferences.getBoolean(DataStream, false);
         threshold = preferences.getInt(Threshold,0);
         host = preferences.getString(Host, "");
         androidId  = "" + android.provider.Settings.Secure.getString( mContext.getContentResolver(), android.provider.Settings.Secure.ANDROID_ID);
@@ -54,14 +61,17 @@ public class Detector implements SensorEventListener {
     @Override
     public void onSensorChanged(SensorEvent sensorEvent) {
 
+        double tempMagnitude = 0, tempX = 0, tempY = 0, tempZ = 0;
+
         if (sensorEvent.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
+            boolean doSent = true;
 
             float x = sensorEvent.values[0];
             float y = sensorEvent.values[1];
             float z = sensorEvent.values[2];
 
             if (!mInitialized) {
-                mLastX = x;
+                mLastX = x; 
                 mLastY = y;
                 mLastZ = z;
                 mInitialized = true;
@@ -84,35 +94,35 @@ public class Detector implements SensorEventListener {
 
                 double mvalue = Math.sqrt(deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ);
 
-                // jika delta x atau y atau z lebih besar dari 5
-                // kirim data ke server
-                if(mvalue >= threshold && mvalue > 0 ){
-
-                    Log.i("VALUE", Double.toString(mvalue));
-
-                    doJson requestJson = new doJson();
-                    requestJson.execute(host, androidId, Double.toString(mvalue));
-                    //requestJson.execute(host, androidId, Float.toString(deltaX), Float.toString(deltaY), Float.toString(deltaZ), Double.toString(mvalue));
-
-                    JSONObject json = null;
-                    try {
-                        json = requestJson.get();
-                        JSONObject uniObject = json.getJSONObject("response");
-                        String  alert = uniObject.getString("alert");
-                        Log.i("ALERT", alert);
-                        if(alert == "true") {
-                            Toast.makeText(context, "Terjadi Gempa", Toast.LENGTH_SHORT).show();
-
-                            showNotification();
-                        }
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    } catch (ExecutionException e) {
-                        e.printStackTrace();
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
+                if(mvalue > tempMagnitude) {
+                    tempMagnitude = mvalue;
+                    tempX = deltaX;
+                    tempY = deltaY;
+                    tempZ = deltaZ;
                 }
+
+                if(counter++%100 == 0) {
+                    //Log.i("VALUE", Double.toString(mvalue));
+                    // jika delta x atau y atau z lebih besar dari 5
+                    // kirim data ke server
+                    if(mvalue >= threshold && mvalue > 0 ){
+                        sentDataToServer(Double.toString(tempMagnitude), Double.toString(tempX), Double.toString(tempY), Double.toString(tempZ));
+                        doSent = false;
+                    }
+
+                    if(dataStream && doSent) {
+                        sentDataToServer(Double.toString(tempMagnitude), Double.toString(tempX), Double.toString(tempY), Double.toString(tempZ));
+                    }
+
+                    //reset tempMagnitude;
+                    tempMagnitude = 0;
+                }
+                else if(counter > 1000) {
+                    counter = 0;
+                }
+
+                //announce magnitude
+                doBroadcast(String.format("%.2f", mvalue));
             }
         }
     }
@@ -152,5 +162,38 @@ public class Detector implements SensorEventListener {
         // If you want to hide the notification after it was selected, do the code below
         // myNotification.flags |= Notification.FLAG_AUTO_CANCEL;
         notificationManager.notify(0, mNotification);
+    }
+
+    public void doBroadcast(String value) {
+        Intent intent = new Intent("MyCustomIntent");
+        // add data to the Intent
+        intent.putExtra("message", value);
+        intent.setAction("com.example.android.myapplication.A_CUSTOM_INTENT");
+        context.sendBroadcast(intent);
+        Log.i("BROADCAST", value);
+    }
+
+    public void sentDataToServer(String value, String x, String y, String z) {
+        doJson requestJson = new doJson();
+        requestJson.execute(host, androidId, value, x, y, z);
+        //requestJson.execute(host, androidId, Float.toString(deltaX), Float.toString(deltaY), Float.toString(deltaZ), Double.toString(mvalue));
+
+        JSONObject json = null;
+        try {
+            json = requestJson.get();
+            JSONObject uniObject = json.getJSONObject("response");
+            String  alert = uniObject.getString("alert");
+            //Log.i("ALERT", alert);
+            if(alert == "true") {
+                showNotification();
+                //Toast.makeText(context, "Terjadi Gempa", Toast.LENGTH_SHORT).show();
+            }
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
 }

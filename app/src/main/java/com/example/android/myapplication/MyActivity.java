@@ -11,23 +11,30 @@ import android.view.MenuItem;
 import android.content.Intent;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
 
 public class MyActivity extends Activity {
 
     Button btnStartService, btnStopService;
     ComponentName receiver;
     PackageManager pm;
+    public static TextView value;
+    private receiveBroadcast myReceiver;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_my);
 
+        value = (TextView)findViewById(R.id.value);
+
         receiver = new ComponentName(this, BootCompleted.class);
         pm = this.getPackageManager();
 
         btnStartService = (Button) findViewById(R.id.btnStartService);
         btnStopService = (Button) findViewById(R.id.btnStopService);
+
+        myReceiver = new receiveBroadcast();
 
         updateButtonState();
     }
@@ -111,4 +118,6 @@ public class MyActivity extends Activity {
         }
         return false;
     }
+
+
 }

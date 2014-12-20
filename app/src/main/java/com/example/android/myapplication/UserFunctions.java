@@ -17,15 +17,15 @@ public class UserFunctions {
         jsonParser = new JSONParser();
     }
 
-    public JSONObject tambahData(String registerURL, String deviceId, String x, String y, String z, String mvalue) {
+    public JSONObject tambahData(String registerURL, String deviceId,  String magnitude, String x, String y, String z) {
         // Building Parameters
         List<NameValuePair> params = new ArrayList<NameValuePair>();
         params.add(new BasicNameValuePair("tag", "insert"));
         params.add(new BasicNameValuePair("deviceId", deviceId));
+        params.add(new BasicNameValuePair("magnitude", magnitude));
         params.add(new BasicNameValuePair("x", x));
         params.add(new BasicNameValuePair("y", y));
         params.add(new BasicNameValuePair("z", z));
-        params.add(new BasicNameValuePair("value", mvalue));
 
 
         // getting JSON Object
@@ -33,18 +33,4 @@ public class UserFunctions {
         // return json
         return json;
     }
-
-    public JSONObject tambahData(String registerURL, String deviceId, String value) {
-        // Building Parameters
-        List<NameValuePair> params = new ArrayList<NameValuePair>();
-        params.add(new BasicNameValuePair("tag", "insert"));
-        params.add(new BasicNameValuePair("deviceId", deviceId));
-        params.add(new BasicNameValuePair("value", value));
-
-        // getting JSON Object
-        JSONObject json = jsonParser.getJSONFromUrl(registerURL, params);
-        // return json
-        return json;
-    }
-
 }

@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Switch;
 import android.widget.TextView;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
@@ -16,8 +17,10 @@ public class Settings extends Activity {
 
     TextView host ;
     TextView threshold;
+    Switch dataStream;
     public static final String Host = "host";
     public static final String Threshold = "threshold";
+    public static final String DataStream = "stream";
 
     SharedPreferences sharedpreferences;
 
@@ -28,6 +31,7 @@ public class Settings extends Activity {
 
         host = (TextView) findViewById(R.id.editTextHost);
         threshold = (TextView) findViewById(R.id.editTextThreshold);
+        dataStream = (Switch) findViewById(R.id.switch1);
 
         sharedpreferences = PreferenceManager.getDefaultSharedPreferences(this);
 
@@ -41,18 +45,21 @@ public class Settings extends Activity {
             int thresholdint = sharedpreferences.getInt(Threshold,0);
             String myString = String.valueOf(thresholdint);
             threshold.setText(myString);
-
-
         }
-
+        if (sharedpreferences.contains(DataStream))
+        {
+            dataStream.setChecked(sharedpreferences.getBoolean(DataStream, false));
+        }
     }
 
     public void run(View view){
         String n  = host.getText().toString();
         String ph  = threshold.getText().toString();
+        Boolean dataStreamBool = dataStream.isChecked();
         Editor editor = sharedpreferences.edit();
         editor.putString(Host, n);
         editor.putInt(Threshold,Integer.parseInt(ph));
+        editor.putBoolean(DataStream, dataStreamBool);
         editor.commit();
     }
 
