@@ -1,5 +1,7 @@
 package com.example.android.myapplication;
 
+import android.util.Log;
+
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
 import org.json.JSONObject;
@@ -17,7 +19,7 @@ public class UserFunctions {
         jsonParser = new JSONParser();
     }
 
-    public JSONObject tambahData(String registerURL, String deviceId,  String magnitude, String x, String y, String z) {
+    public JSONObject tambahData(String registerURL, String deviceId,  String magnitude, String x, String y, String z, String timeStamp) {
         // Building Parameters
         List<NameValuePair> params = new ArrayList<NameValuePair>();
         params.add(new BasicNameValuePair("tag", "insert"));
@@ -26,6 +28,8 @@ public class UserFunctions {
         params.add(new BasicNameValuePair("x", x));
         params.add(new BasicNameValuePair("y", y));
         params.add(new BasicNameValuePair("z", z));
+        params.add(new BasicNameValuePair("timeStamp", timeStamp));
+        Log.i("timeStamp", timeStamp);
 
 
         // getting JSON Object

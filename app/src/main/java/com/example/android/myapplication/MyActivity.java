@@ -6,12 +6,17 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.os.SystemClock;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.content.Intent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import java.util.Date;
 
 public class MyActivity extends Activity {
 
@@ -119,5 +124,18 @@ public class MyActivity extends Activity {
         return false;
     }
 
+    public void requestNtp(View view) {
+        SntpClient client = new SntpClient();
+
+        if (client.requestTime("1.id.pool.ntp.org", 20000)) {
+            Log.i("NTP", "request to ntp...");
+            long now = client.getNtpTime() + SystemClock.elapsedRealtime() - client.getNtpTimeReference();
+            Log.i("NTP", "result = "+Long.toString(now));
+            Toast.makeText(this, Long.toString(now), Toast.LENGTH_SHORT).show();
+        }
+        else{
+            Toast.makeText(this, "Time Out", Toast.LENGTH_SHORT).show();
+        }
+    }
 
 }

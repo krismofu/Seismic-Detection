@@ -11,7 +11,9 @@ import android.hardware.Sensor;
 import android.content.Context;
 import android.hardware.SensorEvent;
 import android.net.Uri;
+import android.os.SystemClock;
 import android.preference.PreferenceManager;
+import android.text.format.DateFormat;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -43,6 +45,8 @@ public class Detector implements SensorEventListener {
     private Context context;
     private boolean dataStream;
     private static long counter = 0;
+    private SntpClient client;
+
 
     public Detector(Context mContext) {
         context = mContext;
@@ -56,20 +60,34 @@ public class Detector implements SensorEventListener {
         threshold = preferences.getInt(Threshold,0);
         host = preferences.getString(Host, "");
         androidId  = "" + android.provider.Settings.Secure.getString( mContext.getContentResolver(), android.provider.Settings.Secure.ANDROID_ID);
+        client = new SntpClient();
     }
 
     @Override
     public void onSensorChanged(SensorEvent sensorEvent) {
 
         double tempMagnitude = 0, tempX = 0, tempY = 0, tempZ = 0;
+        long actualTime;
 
         if (sensorEvent.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
             boolean doSent = true;
+            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            Date date;
+            if (client.requestTime("2.android.pool.ntp.org", 100)) {
+                Log.i("NTP", "request to ntp...");
+                long now = client.getNtpTime() + SystemClock.elapsedRealtime() - client.getNtpTimeReference();
+                Log.i("NTP", "result = "+Long.toString(now));
 
-            float x = sensorEvent.values[0];
-            float y = sensorEvent.values[1];
-            float z = sensorEvent.values[2];
+                date = new Date(now);
+            }
+            else{
+                date = new Date();
+            }
 
+            float deltaX = sensorEvent.values[0];
+            float deltaY = sensorEvent.values[1];
+            float deltaZ = sensorEvent.values[2];
+/*
             if (!mInitialized) {
                 mLastX = x; 
                 mLastY = y;
@@ -77,6 +95,7 @@ public class Detector implements SensorEventListener {
                 mInitialized = true;
             } else {
                 //hitung delta perpindahn axix x, y, z
+
                 float deltaX = Math.abs(mLastX - x);
                 float deltaY = Math.abs(mLastY - y);
                 float deltaZ = Math.abs(mLastZ - z);
@@ -91,7 +110,7 @@ public class Detector implements SensorEventListener {
                 mLastX = x;
                 mLastY = y;
                 mLastZ = z;
-
+                */
                 double mvalue = Math.sqrt(deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ);
 
                 if(mvalue > tempMagnitude) {
@@ -106,12 +125,12 @@ public class Detector implements SensorEventListener {
                     // jika delta x atau y atau z lebih besar dari 5
                     // kirim data ke server
                     if(mvalue >= threshold && mvalue > 0 ){
-                        sentDataToServer(Double.toString(tempMagnitude), Double.toString(tempX), Double.toString(tempY), Double.toString(tempZ));
+                        sentDataToServer(Double.toString(tempMagnitude), Double.toString(tempX), Double.toString(tempY), Double.toString(tempZ), dateFormat.format(date));
                         doSent = false;
                     }
 
                     if(dataStream && doSent) {
-                        sentDataToServer(Double.toString(tempMagnitude), Double.toString(tempX), Double.toString(tempY), Double.toString(tempZ));
+                        sentDataToServer(Double.toString(tempMagnitude), Double.toString(tempX), Double.toString(tempY), Double.toString(tempZ), dateFormat.format(date));
                     }
 
                     //reset tempMagnitude;
@@ -125,7 +144,7 @@ public class Detector implements SensorEventListener {
                 doBroadcast(String.format("%.2f", mvalue));
             }
         }
-    }
+    //}
 
     @Override
     public void onAccuracyChanged(Sensor sensor, int i) {
@@ -173,9 +192,9 @@ public class Detector implements SensorEventListener {
         Log.i("BROADCAST", value);
     }
 
-    public void sentDataToServer(String value, String x, String y, String z) {
+    public void sentDataToServer(String value, String x, String y, String z, String timeStamp) {
         doJson requestJson = new doJson();
-        requestJson.execute(host, androidId, value, x, y, z);
+        requestJson.execute(host, androidId, value, x, y, z, timeStamp);
         //requestJson.execute(host, androidId, Float.toString(deltaX), Float.toString(deltaY), Float.toString(deltaZ), Double.toString(mvalue));
 
         JSONObject json = null;
